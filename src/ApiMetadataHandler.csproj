@@ -12,7 +12,6 @@
     <NeutralLanguage>en</NeutralLanguage>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/TheBoyLeastLikelyTo/ApiMetadataHandler</PackageProjectUrl>
-    <Description>A C# library for collecting metadata from APIs (or other sources) and saving it in existing objects.</Description>
     <Title>ApiMetadataHandler</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -33,9 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Logging">
-      <HintPath>..\..\Logging\src\bin\Release\net8.0\Logging.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\Logging\src\Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿// ApiMetadataHandler by Simon Field
 
+using Logging;
 using Logging.Broadcasting;
 using System;
 using System.Collections.Generic;
@@ -13,17 +14,15 @@ namespace ApiMetadataHandler;
 /// <typeparam name="TImplementer">The type of object implementing <see cref="IApiMetadataRecordable{TIdentifier, TMetadata}"/>.</typeparam>
 /// <typeparam name="TIdentifier">The type of the identifier of a <typeparamref name="TImplementer"/> object.</typeparam>
 /// <typeparam name="TMetadata">The type of the metadata object of a <typeparamref name="TImplementer"/> object.</typeparam>
-public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, TCast> :
-    StringBroadcasterBase
+/// <typeparam name="TCast">The type of the object that is cast from <typeparamref name="TImplementer"/>.</typeparam>
+public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, TCast>(List<TCast> entries, IBroadcaster<string> bcaster) :
+    ILogger<string>
     where TIdentifier : notnull, IEquatable<TIdentifier>
     where TImplementer : IApiMetadataRecordable<TIdentifier, TMetadata>
 {
-    private readonly List<TImplementer> _entries;
+    private readonly List<TImplementer> _entries = entries.OfType<TImplementer>().ToList();
 
-    protected ApiMetadataHandler(List<TCast> entries, StringBroadcaster bcaster) : base(bcaster)
-    {
-        _entries = entries.OfType<TImplementer>().ToList();
-    }
+    public IBroadcaster<string> BCaster { get; } = bcaster;
 
     /// <summary>
     /// Get a <see cref="Dictionary{TKey, TValue}"/> containing the metadata (of type <typeparamref name="TMetadata"/>) for the given identifiers (of type <typeparamref name="TIdentifier"/>).
@@ -58,10 +57,6 @@ public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, T
     /// </summary>
     protected abstract Func<TImplementer, TCast> Converter { get; }
 
-    /// <summary>
-    /// Match the objects of type <typeparamref name="TImplementer"/> with their respective API metadata of type <typeparamref name="TMetadata"/>.
-    /// </summary>
-    /// <returns>A list of <typeparamref name="TCast"/> objects.</returns>
     public List<TCast> MatchEntries()
     {
         List<TImplementer> entries = _entries;

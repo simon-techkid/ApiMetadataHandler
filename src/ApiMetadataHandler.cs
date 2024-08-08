@@ -15,12 +15,13 @@ namespace ApiMetadataHandler;
 /// <typeparam name="TIdentifier">The type of the identifier of a <typeparamref name="TImplementer"/> object.</typeparam>
 /// <typeparam name="TMetadata">The type of the metadata object of a <typeparamref name="TImplementer"/> object.</typeparam>
 /// <typeparam name="TCast">The type of the object that is cast from <typeparamref name="TImplementer"/>.</typeparam>
-public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, TCast>(List<TCast> entries, IBroadcaster<string> bcaster) :
+public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, TCast>(IBroadcaster<string> bcaster) :
+    IApiMetadataHandler<TCast>,
     ILogger<string>
     where TIdentifier : notnull, IEquatable<TIdentifier>
     where TImplementer : IApiMetadataRecordable<TIdentifier, TMetadata>
 {
-    private readonly List<TImplementer> _entries = entries.OfType<TImplementer>().ToList();
+    private static IEnumerable<TImplementer> GetEntries(List<TCast> entries) => entries.OfType<TImplementer>();
 
     public IBroadcaster<string> BCaster { get; } = bcaster;
 
@@ -57,18 +58,17 @@ public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, T
     /// </summary>
     protected abstract Func<TImplementer, TCast> Converter { get; }
 
-    public List<TCast> MatchEntries()
+    public List<TCast> MatchEntries(List<TCast> allEntries)
     {
-        List<TImplementer> entries = _entries;
+        IEnumerable<TImplementer> entries = GetEntries(allEntries);
 
         // Extract track IDs
-        List<TIdentifier> trackIds = entries
+        IEnumerable<TIdentifier> trackIds = entries
             .Select(validEntry => CustomModifier(validEntry.GetEntryCode()))
-            .Where(identifier => identifier != null && CustomFilter(identifier))
-            .ToList()!;
+            .Where(identifier => identifier != null && CustomFilter(identifier))!;
 
         List<TIdentifier> distinctIds = trackIds.Distinct(EqualityComparer).ToList();
-        BCaster.Broadcast($"Filtered {distinctIds.Count} unique {NameOfEntity} IDs from {trackIds.Count} total {NameOfEntity} IDs");
+        BCaster.Broadcast($"Filtered {distinctIds.Count} unique {NameOfEntity} IDs from {trackIds.Count()} total {NameOfEntity} IDs");
 
         // Get metadata from Spotify API
         Dictionary<TIdentifier, TMetadata> metadatas = GetMetadatas(distinctIds)
@@ -76,26 +76,28 @@ public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, T
 
         BCaster.Broadcast($"Retrieved {metadatas.Count}/{distinctIds.Count} {NameOfEntity} metadata entries from API.");
 
-        for (int i = 0; i < entries.Count; i++)
-        {
-            TImplementer entry = entries[i];
+        List<TImplementer> entriesList = entries.ToList();
 
-            if (entry.TryGetEntryCode(out TIdentifier entryCode) == true)
+        for (int i = 0; i < entriesList.Count; i++)
+        {
+            TImplementer thisEntry = entriesList[i];
+
+            if (thisEntry.TryGetEntryCode(out TIdentifier entryCode) == true)
             {
                 if (metadatas.TryGetValue(entryCode, out TMetadata? metadata))
                 {
-                    entry.Metadata = metadata;
+                    thisEntry.Metadata = metadata;
                 }
                 else
                 {
-                    BCaster.BroadcastError(new Exception($"[API] No metadata found for {entry.ToString()} ({entryCode})"));
+                    BCaster.BroadcastError(new Exception($"[API] No metadata found for {entriesList[i].ToString()} ({entryCode})"));
                 }
             }
 
-            entries[i] = entry;
+            entriesList[i] = thisEntry;
         }
 
-        return entries.Select(entry => Converter(entry)).ToList();
+        return entriesList.Select(entry => Converter(entry)).ToList();
     }
 
     /// <summary>

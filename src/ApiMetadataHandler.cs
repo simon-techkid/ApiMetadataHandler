@@ -1,6 +1,5 @@
 ﻿// ApiMetadataHandler by Simon Field
 
-using Logging;
 using Logging.Broadcasting;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace ApiMetadataHandler;
 /// <typeparam name="TCast">The type of the object that is cast from <typeparamref name="TImplementer"/>.</typeparam>
 public abstract class ApiMetadataHandler<TImplementer, TIdentifier, TMetadata, TCast>(IBroadcaster<string> bcaster) :
     IApiMetadataHandler<TCast>,
-    ILogger<string>
+    IBroadcastable<string>
     where TIdentifier : notnull, IEquatable<TIdentifier>
     where TImplementer : IApiMetadataRecordable<TIdentifier, TMetadata>
 {

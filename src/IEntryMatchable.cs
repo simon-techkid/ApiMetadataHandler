@@ -1,6 +1,6 @@
-﻿// ApiMetadataHandler by Simon Field
+﻿// Techkid.ApiMetadata by Simon Field
 
-namespace ApiMetadataHandler;
+namespace Techkid.ApiMetadata;
 
 /// <summary>
 /// Provides access to the identifier of an entry.
@@ -18,9 +18,5 @@ public interface IEntryMatchable<TResult>
     /// </summary>
     /// <param name="entryCode">The identifier of the entry.</param>
     /// <returns>True if the entry has an identifier, false otherwise.</returns>
-    bool TryGetEntryCode(out TResult entryCode)
-    {
-        entryCode = GetEntryCode()!;
-        return entryCode != null;
-    }
+    bool TryGetEntryCode(out TResult entryCode);
 }

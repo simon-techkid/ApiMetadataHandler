@@ -1,8 +1,8 @@
-﻿// ApiMetadataHandler by Simon Field
+﻿// Techkid.ApiMetadata by Simon Field
 
-using Logging.Broadcasting;
+using Techkid.Logging.Broadcasting;
 
-namespace ApiMetadataHandler;
+namespace Techkid.ApiMetadata;
 
 /// <summary>
 /// Factory for ApiMetadataHandler classes.

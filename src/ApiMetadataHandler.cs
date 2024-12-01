@@ -1,11 +1,11 @@
-﻿// ApiMetadataHandler by Simon Field
+﻿// Techkid.ApiMetadata by Simon Field
 
-using Logging.Broadcasting;
+using Techkid.Logging.Broadcasting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ApiMetadataHandler;
+namespace Techkid.ApiMetadata;
 
 /// <summary>
 /// A class for matching entries using their identifier (of type <typeparamref name="TIdentifier"/>) with their API metadata (of type <typeparamref name="TMetadata"/>) from the respective API service.

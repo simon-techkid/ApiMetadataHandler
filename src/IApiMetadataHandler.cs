@@ -1,8 +1,8 @@
-﻿// ApiMetadataHandler by Simon Field
+﻿// Techkid.ApiMetadata by Simon Field
 
 using System.Collections.Generic;
 
-namespace ApiMetadataHandler;
+namespace Techkid.ApiMetadata;
 
 /// <summary>
 /// An interface for matching entries (of type <typeparamref name="TIdentifier"/>) with their API metadata.

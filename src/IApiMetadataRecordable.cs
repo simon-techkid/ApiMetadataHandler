@@ -1,6 +1,6 @@
-﻿// ApiMetadataHandler by Simon Field
+﻿// Techkid.ApiMetadata by Simon Field
 
-namespace ApiMetadataHandler;
+namespace Techkid.ApiMetadata;
 
 /// <summary>
 /// Defines an object that contains a metadata sidecar (metadata often retrieved from an API) of type <typeparamref name="TMetadata"/>.

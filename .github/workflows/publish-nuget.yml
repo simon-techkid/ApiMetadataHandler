@@ -1,0 +1,70 @@
+name: Build and Publish .NET NuGet Packages
+
+on:
+    push:
+      tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    name: Build and Publish Binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore .NET
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Pack (Linux)
+      run: |
+        find . -name "*.csproj" -exec dotnet pack {} --configuration Release --output "nupkgs" \; 
+      shell: bash
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Pack (Windows)
+      run: |
+        Get-ChildItem -Path . -Include *.csproj -Recurse | ForEach-Object {
+          dotnet pack "$_" --configuration Release --output "nupkgs"
+        }
+      shell: pwsh
+      if: matrix.os == 'windows-latest'
+
+    - name: Push NuGet Packages
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_TOKEN }}
+      run: |
+        for pkg in nupkgs/*.nupkg; do
+          dotnet nuget push "$pkg" --source "https://api.nuget.org/v3/index.json" --api-key $NUGET_API_KEY --skip-duplicate
+        done
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+
+    - name: Push NuGet Packages (Windows)
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_TOKEN }}
+      run: |
+        $packages = Get-ChildItem -Path nupkgs -Filter *.nupkg
+        foreach ($pkg in $packages) {
+          dotnet nuget push $pkg.FullName --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY --skip-duplicate
+        }
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-${{ matrix.os }}
+        path: nupkgs/
